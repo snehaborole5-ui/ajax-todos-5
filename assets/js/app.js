@@ -1,261 +1,255 @@
 const cl = console.log;
-const inputform = document.getElementById('inputform')
-const title = document.getElementById('title')
-const UserId = document.getElementById('UserId')
-const status = document.getElementById('status')
-const Addtodo = document.getElementById('Addtodo')
-const Updatetodo = document.getElementById('Updatetodo')
-const todocontainer = document.getElementById('todocontainer')
-const spinner = document.getElementById('spinner')
+
+const spinner = document.getElementById('spinner');
+const todoContainer = document.getElementById('todoContainer');
+const todoForm = document.getElementById('todoForm');
+const titleControl = document.getElementById('title');
+const userIdControl = document.getElementById('userId');
+const completedControl = document.getElementById('completed');
+const addTodoBtn = document.getElementById('addTodoBtn');
+const updateTodoBtn = document.getElementById('updateTodoBtn');
 
 
+const openModalBtn = document.getElementById('openModalBtn');
+const closeModalBtn = document.getElementById('closeModalBtn');
+const closeModalIcon = document.getElementById('closeModalIcon');
+const todoModal = document.getElementById('todoModal');
+const modalBackdrop = document.getElementById('modalBackdrop');
+const modalTitle = document.getElementById('modalTitle');
 
-let Base_Url =`https://jsonplaceholder.typicode.com/todos`
+const BASE_URL = `https://jsonplaceholder.typicode.com`;
+const TODO_URL = `${BASE_URL}/todos`;
 
-let todoArr = []
+let todosArr = [];
+let updateId = null;
 
 
-
-function snackbar(msg,icon){
-    swal.fire({
-        title : msg,
-        icon : icon,
-        timer : 3000
-    })
-}
-
-function fetchtodo(){
-    spinner.classList.remove('d-none')
-    let xhr = new XMLHttpRequest()
-
-    xhr.open('GET',Base_Url)
-
-    xhr.send(null)
-    xhr.onload = function (){
-        if(xhr.status >= 200 && xhr.status <= 299){
-            todoArr = JSON.parse(xhr.response)
-
-            createTodo(todoArr.reverse())
-
-        }
-        spinner.classList.add('d-none')
-
+function openModal(isEdit = false) {
+    if(isEdit) {
+        modalTitle.innerText = "Edit Todo Details";
+        addTodoBtn.classList.add('d-none');
+        updateTodoBtn.classList.remove('d-none');
+    } else {
+        modalTitle.innerText = "Add New Todo";
+        addTodoBtn.classList.remove('d-none');
+        updateTodoBtn.classList.add('d-none');
+        todoForm.reset();
     }
+    todoModal.style.display = 'block';
+    modalBackdrop.style.display = 'block';
 }
 
-fetchtodo()
-
-function seticons(status){
-    if(status.toString() == "true"){
-        return `<i class="fa-solid fa-square-check fa-2x text-warning"></i>`
-    }else{
-        return `<i class="fa-solid fa-square-xmark fa-2x text-danger"></i>`
-    }
-}
-
-
-
-
-
-function createTodo(arr){
-    let result = ``
-
-    arr.forEach((ele,i) =>{
-        result+=`<tr id=${ele.id}>
-					<td>${arr.length - i}</td>
-					<td>${ele.title}</td>
-					<td>${seticons(ele.completed)}</td>
-					<td><i role='button' class="fa-regular fa-pen-to-square fa-2x text-warning" onclick='Onedit(this)'></i></td>
-					<td><i role='button' class="fa-solid fa-trash fa-2x text-danger" onclick='OnRemove(this)'></i></td>
-				</tr>`
-    })
-
-    todocontainer.innerHTML = result
-
-
+function closeModal() {
+    todoModal.style.display = 'none';
+    modalBackdrop.style.display = 'none';
+    todoForm.reset();
+    updateId = null;
 }
 
 
-function onsubmit(ele){
-    spinner.classList.remove('d-none')
+openModalBtn.addEventListener('click', () => openModal(false));
+closeModalBtn.addEventListener('click', closeModal);
+closeModalIcon.addEventListener('click', closeModal);
+modalBackdrop.addEventListener('click', closeModal);
 
-    ele.preventDefault()
-
-    let newtodo ={
-        userId : UserId.value,
-        title : title.value,
-        completed : status.value
-    }
-
-    todoArr.unshift(newtodo)
-
-    let xhr = new XMLHttpRequest()
-
-    xhr.open('POST',Base_Url)
-
-    xhr.send(JSON.stringify(newtodo))
-
-    xhr.onload = function (){
-        if(xhr.status >= 200 && xhr.status <= 299){
-            let res = JSON.parse(xhr.response)
-
-            createNewtodo(newtodo,res)
-
-            snackbar(`The new todo id ${res.id} is Added Successfully!!`,'success')
-        }
-        spinner.classList.add('d-none')
-
-    }
-
-
-
-}
-
-
-function createNewtodo(newtodo,res){
-    let tr = document.createElement('tr')
-
-    tr.id = res.id
-
-    tr.innerHTML =`<td>${todoArr.length}</td>
-					<td>${newtodo.title}</td>
-					<td>${seticons(newtodo.completed)}</td>
-					<td><i role='button' class="fa-regular fa-pen-to-square fa-2x text-success" onclick='Onedit(this)'></i></td>
-					<td><i role='button' class="fa-solid fa-trash fa-2x text-danger" onclick='OnRemove(this)'></i></td>
-				`
-
-    todocontainer.prepend(tr)
-    inputform.reset()
-
-
-
-}
-
-
-function Onedit(ele){
-    spinner.classList.remove('d-none')
-
-    let editId = ele.closest('tr').id
-    localStorage.setItem('EditId',editId)
-
-    let editUrl = `${Base_Url}/${editId}`
-
-    let xhr = new XMLHttpRequest()
-
-    xhr.open('GET',editUrl)
-
-    xhr.send(null)
-
-    xhr.onload = function(){
-        if(xhr.status >= 200 && xhr.status <= 299){
-            let editobj = JSON.parse(xhr.response)
-
-            title.value = editobj.title
-            UserId.value = editobj.userId
-            status.value = editobj.completed
-
-
-
-            Addtodo.classList.add('d-none')
-            Updatetodo.classList.remove('d-none')
-        }
-
-        spinner.classList.add('d-none')
-
-    }
-
-
-}
-
-function onupdate(){
-    spinner.classList.remove('d-none')
-
-    let updateId = localStorage.getItem('EditId')
-
-    let updateobj ={
-        userId : UserId.value,
-        title : title.value,
-        completed : status.value,
-        id : updateId
-    }
-
-    let updateUrl =`${Base_Url}/${updateId}`
-
-    let xhr = new XMLHttpRequest()
-
-    xhr.open('PUT',updateUrl)
-    
-    xhr.send(JSON.stringify(updateobj))
-
-    xhr.onload = function(){
-        if(xhr.status >= 200 && xhr.status <= 299){
-            let tr = document.getElementById(updateId).children
-
-            tr[1].innerText = updateobj.title
-            tr[2].innerHTML =` ${seticons(updateobj.completed)}`
-
-            Addtodo.classList.remove('d-none')
-            Updatetodo.classList.add('d-none')
-
-            inputform.reset()
-            snackbar(`The todo id ${updateId} is Updated Successfully!!`,'success')
-
-        }
-
-
-        spinner.classList.add('d-none')
-
-    }
-
-
-}
-
-function OnRemove(ele){
-
-    let removeId = ele.closest('tr').id
+function snackbar(msg, icon) {
     Swal.fire({
-        title: "Are you sure?",
-        text: "You won't be able to revert this!",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "Yes, delete it!"
-        }).then((result) => {
-        if (result.isConfirmed) {
-            spinner.classList.remove('d-none')
+        title: msg,
+        icon: icon,
+        timer: 3000
+    });
+}
+
+function initTooltips() {
+    $('[data-toggle="tooltip"]').tooltip({
+        boundary: 'window'
+    });
+}
+
+function fetchTodos() {
+    spinner.style.display = 'flex';
+    let xhr = new XMLHttpRequest();
+    xhr.open('GET', TODO_URL);
+    xhr.send(null);
+
+    xhr.onload = function () {
+        spinner.style.display = 'none';
+        if (xhr.status >= 200 && xhr.status <= 299) {
+            let data = JSON.parse(xhr.response);
+            todosArr = [...data];
+            renderTodoRows(todosArr.reverse());
+        } else {
+            snackbar('Error while fetching the data', 'error');
+        }
+    };
+    xhr.onerror = function() {
+        spinner.style.display = 'none';
+        snackbar('Network Error!', 'error');
+    };
+}
+
+function renderTodoRows(arr) {
+    let result = '';
+    arr.forEach(todo => {
+        let statusBadge = todo.completed 
+            ? `<span class="badge badge-success">Completed</span>` 
+            : `<span class="badge badge-secondary">Pending</span>`;
             
-            let removeUrl = `${Base_Url}/${removeId}`
+        result += `
+            <tr id='todo-${todo.id}'>
+                <td>${todo.id}</td>
+                <td data-toggle="tooltip" title="${todo.title}">${todo.title}</td>
+                <td>${todo.userId}</td>
+                <td>${statusBadge}</td>
+                <td><button onclick="onEdit('${todo.id}')" class="btn btn-sm btn-outline-info">Edit</button></td>
+                <td><button onclick="onRemove('${todo.id}')" class="btn btn-sm btn-outline-danger">Remove</button></td>
+            </tr>
+        `;
+    });
+    todoContainer.innerHTML = result;
+    initTooltips();
+}
 
-            let xhr = new XMLHttpRequest()
-            xhr.open('DELETE',removeUrl)
+function onTodoSubmit(eve) {
+    eve.preventDefault();
 
-            xhr.send()
+    let TODO_OBJ = {
+        title: titleControl.value,
+        userId: userIdControl.value,
+        completed: completedControl.value === 'true'
+    };
 
-            xhr.onload = function(){
-                if(xhr.status >= 200 && xhr.status <= 299){
-                    ele.closest('tr').remove()
-                    snackbar(`The todo id ${removeId} is Removed Successfully!!`,'success')
+    spinner.style.display = 'flex';
+    let xhr = new XMLHttpRequest();
+    xhr.open('POST', TODO_URL);
+    xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+    xhr.send(JSON.stringify(TODO_OBJ));
 
-                }
-
-                spinner.classList.add('d-none')
+    xhr.onload = function () {
+        spinner.style.display = 'none';
+        if (xhr.status >= 200 && xhr.status <= 299) {
+            let res = JSON.parse(xhr.response);
             
+            res.title = res.title || TODO_OBJ.title;
+            res.userId = res.userId || TODO_OBJ.userId;
+            res.completed = res.hasOwnProperty('completed') ? res.completed : TODO_OBJ.completed;
+
+            closeModal(); 
+
+            let tr = document.createElement('tr');
+            tr.id = `todo-${res.id}`;
+            let statusBadge = res.completed 
+                ? `<span class="badge badge-success">Completed</span>` 
+                : `<span class="badge badge-secondary">Pending</span>`;
+
+            tr.innerHTML = `
+                <td>${res.id}</td>
+                <td data-toggle="tooltip" title="${res.title}">${res.title}</td>
+                <td>${res.userId}</td>
+                <td>${statusBadge}</td>
+                <td><button onclick="onEdit('${res.id}')" class="btn btn-sm btn-outline-info">Edit</button></td>
+                <td><button onclick="onRemove('${res.id}')" class="btn btn-sm btn-outline-danger">Remove</button></td>
+            `;
+            todoContainer.insertBefore(tr, todoContainer.firstChild);
+            initTooltips();
+            snackbar(`New todo with id ${res.id} created !!!`, 'success');
+        }
+    };
+}
+
+function onEdit(id) {
+    updateId = id;
+    let EDIT_URL = `${BASE_URL}/todos/${updateId}`;
+
+    spinner.style.display = 'flex';
+    let xhr = new XMLHttpRequest();
+    xhr.open('GET', EDIT_URL);
+    xhr.send(null);
+
+    xhr.onload = function () {
+        spinner.style.display = 'none';
+        if (xhr.status >= 200 && xhr.status <= 299) {
+            let res = JSON.parse(xhr.response);
+            titleControl.value = res.title;
+            userIdControl.value = res.userId;
+            completedControl.value = res.completed ? "true" : "false";
+
+            openModal(true); 
+        }
+    };
+}
+
+function onUpdateTodo() {
+    let UPDATE_OBJ = {
+        title: titleControl.value,
+        userId: userIdControl.value,
+        completed: completedControl.value === 'true'
+    };
+
+    spinner.style.display = 'flex';
+    let UPDATE_URL = `${BASE_URL}/todos/${updateId}`;
+
+    let xhr = new XMLHttpRequest();
+    xhr.open('PATCH', UPDATE_URL);
+    xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+    xhr.send(JSON.stringify(UPDATE_OBJ));
+
+    xhr.onload = function () {
+        spinner.style.display = 'none';
+        if (xhr.status >= 200 && xhr.status <= 299) {
+            let row = document.getElementById(`todo-${updateId}`);
+            if(row) {
+                let cells = row.getElementsByTagName('td');
                 
+                cells[1].innerHTML = UPDATE_OBJ.title;
+                cells[1].setAttribute('title', UPDATE_OBJ.title);
+                cells[2].innerHTML = UPDATE_OBJ.userId;
+                cells[3].innerHTML = UPDATE_OBJ.completed 
+                    ? `<span class="badge badge-success">Completed</span>` 
+                    : `<span class="badge badge-secondary">Pending</span>`;
+                
+                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                row.classList.add('highlight');
+                setTimeout(() => { row.classList.remove('highlight'); }, 3000);
             }
-            
-            spinner.classList.add('d-none')
 
+            closeModal(); 
+            initTooltips();
 
+            snackbar('Todo updated successfully !!!', 'success');
+        }
+    };
+}
 
+function onRemove(id) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: 'Do you want to remove this todo?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Remove'
+    }).then(result => {
+        if (result.isConfirmed) {
+            spinner.style.display = 'flex';
+            let REMOVE_URL = `${BASE_URL}/todos/${id}`;
+
+            let xhr = new XMLHttpRequest();
+            xhr.open('DELETE', REMOVE_URL);
+            xhr.send(null);
+
+            xhr.onload = function () {
+                spinner.style.display = 'none';
+                if (xhr.status >= 200 && xhr.status <= 299) {
+                    let row = document.getElementById(`todo-${id}`);
+                    if(row) row.remove();
+                    snackbar('Todo removed successfully !!!', 'success');
+                }
+            };
         }
     });
-
 }
 
+fetchTodos();
 
-
-
-
-inputform.addEventListener('submit',onsubmit)
-Updatetodo.addEventListener('click',onupdate)
+todoForm.addEventListener('submit', onTodoSubmit);
+updateTodoBtn.addEventListener('click', onUpdateTodo);

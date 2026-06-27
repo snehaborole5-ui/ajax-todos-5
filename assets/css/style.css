@@ -1,21 +1,62 @@
-.card-header h2{
-    height: 45px;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-.highlight{
-    background-color: green;
+
+body{
+    background-color: aquamarine !important;
 }
 
-.spinner{
+.modal-backdrop-custom {
     position: fixed;
-    top: 0;
-    left: 0;
-    background-color: rgba(255, 255, 255, 0.75);
-    height: 100vh;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px); 
+    z-index: 1040;
+}
+
+.todo-modal-custom {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
     width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    max-width: 450px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.25);
+    z-index: 1050;
+    overflow: hidden;
+}
+
+/* Spinner Overlay Styling */
+.spinner-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(255, 255, 255, 0.7);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 9999;
+}
+
+
+.highlight { 
+    animation: flashEffect 2s ease-in-out; 
+}
+@keyframes flashEffect {
+    0% { background-color: #ffeeba; }
+    100% { background-color: transparent; }
+}
+
+
+
+
+#todoContainer tr {
+    background-color: violet;
+    transition: background-color 0.2s ease;
+}
+
+
+#todoContainer tr:hover {
+    background-color: #f1f5f9; 
+}
+
+#todoContainer tr td:first-child {
+    font-weight: bold;
+    color: brown;
+    background-color: black;
 }
